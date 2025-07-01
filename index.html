@@ -77,6 +77,7 @@
 <body>
   <h1>ระบบจองเวรโรงอาหาร 🍽️</h1>
   <button id="adminToggle">เข้าสู่โหมดแอดมิน</button>
+
   <div class="category">
     <h2>🍴 โต๊ะโรงอาหาร</h2>
     <div class="grid" id="tables"></div>
@@ -91,7 +92,7 @@
   </div>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbyMp4U_Rq6OVG4fNWZNmU-vesP6f4iziT9kBP8tlgQWGDqy-aUmsDZrG-9C9Sihzkms/exec";
+    const API_URL = "https://script.google.com/macros/s/PASTE-YOUR-DEPLOYMENT-URL/exec"; // <== วาง URL ของคุณตรงนี้
 
     const tables = Array.from({ length: 15 }, (_, i) => ({ id: `โต๊ะ ${i + 1}`, name: null }));
     const bins = Array.from({ length: 2 }, (_, i) => ({ id: `ถังขยะ ${i + 1}`, name: null }));
