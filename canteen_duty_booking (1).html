@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ระบบจองเวรโรงอาหาร</title>
+  <style>
+    body {
+      font-family: 'Prompt', sans-serif;
+      padding: 1rem;
+      background: #fdf6f0;
+      color: #4b3b2f;
+    }
+    h1 {
+      text-align: center;
+      color: #6b4e3d;
+    }
+    button {
+      background-color: #bfa48a;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 10px;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 10px auto;
+      display: block;
+    }
+    .category {
+      margin-top: 30px;
+    }
+    .category h2 {
+      color: #8b5e3c;
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px;
+    }
+    .slot {
+      background: #fff8f0;
+      border: 2px solid #e2cfc3;
+      padding: 12px;
+      border-radius: 12px;
+      text-align: center;
+      cursor: pointer;
+      min-height: 60px;
+      position: relative;
+      box-shadow: 2px 2px 6px rgba(0,0,0,0.05);
+    }
+    .slot.booked {
+      background: #ffe4d1;
+      border-color: #e6a57e;
+      color: #6b4e3d;
+      cursor: default;
+    }
+    .slot .admin-btn {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      background: #c94c4c;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      font-size: 12px;
+      display: none;
+    }
+    .slot.admin .admin-btn {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <h1>ระบบจองเวรโรงอาหาร 🍽️</h1>
+  <button id="adminToggle">เข้าสู่โหมดแอดมิน</button>
+  <div class="category">
+    <h2>🍴 โต๊ะโรงอาหาร</h2>
+    <div class="grid" id="tables"></div>
+  </div>
+  <div class="category">
+    <h2>🗑️ ถังขยะ</h2>
+    <div class="grid" id="bins"></div>
+  </div>
+  <div class="category">
+    <h2>🧹 กวาดพื้น</h2>
+    <div class="grid" id="floors"></div>
+  </div>
+
+  <script>
+    const tables = Array.from({ length: 15 }, (_, i) => ({ id: `โต๊ะ ${i + 1}`, name: null }));
+    const bins = Array.from({ length: 2 }, (_, i) => ({ id: `ถังขยะ ${i + 1}`, name: null }));
+    const floors = Array.from({ length: 7 }, (_, i) => ({ id: `กวาดพื้น ${i + 1}`, name: null }));
+    const data = [...tables, ...bins, ...floors];
+
+    let isAdmin = false;
+
+    function loadReservations() {
+      const saved = JSON.parse(localStorage.getItem('reservations')) || {};
+      data.forEach(slot => {
+        slot.name = saved[slot.id] || null;
+      });
+    }
+
+    function saveReservations() {
+      const saveData = {};
+      data.forEach(slot => {
+        if (slot.name) saveData[slot.id] = slot.name;
+      });
+      localStorage.setItem('reservations', JSON.stringify(saveData));
+    }
+
+    function renderGroup(group, containerId) {
+      const el = document.getElementById(containerId);
+      el.innerHTML = '';
+      group.forEach(slot => {
+        const div = document.createElement('div');
+        div.className = 'slot';
+        div.textContent = slot.name || slot.id;
+        if (slot.name) div.classList.add('booked');
+        if (isAdmin) div.classList.add('admin');
+
+        if (!slot.name && !isAdmin) {
+          div.onclick = () => {
+            const name = prompt(`ใส่ชื่อนักเรียนเพื่อจอง ${slot.id}:`);
+            if (name) {
+              if (data.some(s => s.name === name)) {
+                alert('ชื่อนี้ได้จองจุดอื่นไปแล้ว');
+                return;
+              }
+              slot.name = name;
+              saveReservations();
+              render();
+            }
+          };
+        }
+
+        if (isAdmin && slot.name) {
+          const delBtn = document.createElement('button');
+          delBtn.textContent = 'X';
+          delBtn.className = 'admin-btn';
+          delBtn.onclick = (e) => {
+            e.stopPropagation();
+            if (confirm(`ลบชื่อ ${slot.name} ออกจาก ${slot.id}?`)) {
+              slot.name = null;
+              saveReservations();
+              render();
+            }
+          };
+          div.appendChild(delBtn);
+        }
+
+        el.appendChild(div);
+      });
+    }
+
+    function render() {
+      renderGroup(tables, 'tables');
+      renderGroup(bins, 'bins');
+      renderGroup(floors, 'floors');
+    }
+
+    document.getElementById('adminToggle').onclick = () => {
+      const pass = prompt('ใส่รหัสผ่านแอดมิน:');
+      if (pass === 'admin123') {
+        isAdmin = !isAdmin;
+        document.getElementById('adminToggle').textContent = isAdmin ? 'ออกจากโหมดแอดมิน' : 'เข้าสู่โหมดแอดมิน';
+        render();
+      } else {
+        alert('รหัสผ่านไม่ถูกต้อง');
+      }
+    };
+
+    loadReservations();
+    render();
+  </script>
+</body>
+</html>
