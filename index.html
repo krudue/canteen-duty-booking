@@ -114,13 +114,15 @@
       }
     }
 
-    async function saveReservation(id, name) {
-      await fetch(API_URL, {
-        method: "POST",
-        body: JSON.stringify({ id, name }),
-        headers: { "Content-Type": "application/json" },
-      });
-    }
+  async function saveReservation(id, name) {
+  await fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({ id, name }),
+    headers: { "Content-Type": "application/json" },
+  });
+  await loadReservations(); // ← โหลดข้อมูลใหม่ทันที
+}
+
 
     function renderGroup(group, containerId) {
       const el = document.getElementById(containerId);
