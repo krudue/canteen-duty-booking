@@ -7,76 +7,48 @@
   <style>
     body {
       font-family: 'Prompt', sans-serif;
-      padding: 1rem;
       background: #fdf6f0;
       color: #4b3b2f;
+      padding: 1rem;
     }
-    h1 {
-      text-align: center;
-      color: #6b4e3d;
-    }
+    h1 { text-align: center; color: #6b4e3d; }
     button {
-      background-color: #bfa48a;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 10px;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-      margin: 10px auto;
-      display: block;
+      background-color: #bfa48a; color: white;
+      border: none; padding: 10px 20px;
+      border-radius: 10px; font-size: 16px;
+      cursor: pointer; display: block; margin: 10px auto;
     }
-    .category {
-      margin-top: 30px;
-    }
-    .category h2 {
-      color: #8b5e3c;
-      font-size: 1.2rem;
-      margin-bottom: 10px;
-    }
+    .category { margin-top: 30px; }
+    .category h2 { color: #8b5e3c; font-size: 1.2rem; margin-bottom: 10px; }
     .grid {
-      display: grid;
+      display: grid; gap: 10px;
       grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-      gap: 10px;
     }
     .slot {
       background: #fff8f0;
       border: 2px solid #e2cfc3;
-      padding: 12px;
-      border-radius: 12px;
-      text-align: center;
-      cursor: pointer;
-      min-height: 60px;
-      position: relative;
+      padding: 12px; border-radius: 12px;
+      text-align: center; cursor: pointer;
+      min-height: 60px; position: relative;
       box-shadow: 2px 2px 6px rgba(0,0,0,0.05);
     }
     .slot.booked {
-      background: #ffe4d1;
-      border-color: #e6a57e;
-      color: #6b4e3d;
-      cursor: default;
+      background: #ffe4d1; border-color: #e6a57e;
+      color: #6b4e3d; cursor: default;
     }
     .slot .admin-btn {
-      position: absolute;
-      top: 5px;
-      right: 5px;
-      background: #c94c4c;
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 22px;
-      height: 22px;
-      font-size: 12px;
-      display: none;
+      position: absolute; top: 5px; right: 5px;
+      background: #c94c4c; color: white; border: none;
+      border-radius: 50%; width: 22px; height: 22px;
+      font-size: 12px; display: none;
     }
-    .slot.admin .admin-btn {
-      display: block;
-    }
+    .slot.admin .admin-btn { display: block; }
   </style>
 </head>
 <body>
   <h1>ระบบจองเวรโรงอาหาร 🍽️</h1>
   <button id="adminToggle">เข้าสู่โหมดแอดมิน</button>
+
   <div class="category">
     <h2>🍴 โต๊ะโรงอาหาร</h2>
     <div class="grid" id="tables"></div>
@@ -109,7 +81,7 @@
         });
         render();
       } catch (err) {
-        console.error("โหลดข้อมูลไม่สำเร็จ:", err);
+        alert("โหลดข้อมูลไม่สำเร็จ");
       }
     }
 
@@ -119,7 +91,6 @@
         body: JSON.stringify({ id, name }),
         headers: { "Content-Type": "application/json" },
       });
-      await loadReservations(); // โหลดข้อมูลใหม่ทันที
     }
 
     function renderGroup(group, containerId) {
@@ -134,14 +105,15 @@
 
         if (!slot.name && !isAdmin) {
           div.onclick = async () => {
-            const name = prompt(`ใส่ชื่อนักเรียนเพื่อจอง ${slot.id}:`);
+            const name = prompt(`ใส่ชื่อเพื่อจอง ${slot.id}:`);
             if (name) {
               if (data.some(s => s.name === name)) {
-                alert('ชื่อนี้ได้จองจุดอื่นไปแล้ว');
+                alert('ชื่อซ้ำ: ได้จองตำแหน่งอื่นแล้ว');
                 return;
               }
               slot.name = name;
               await saveReservation(slot.id, name);
+              loadReservations();
             }
           };
         }
@@ -152,9 +124,10 @@
           delBtn.className = 'admin-btn';
           delBtn.onclick = async (e) => {
             e.stopPropagation();
-            if (confirm(`ลบชื่อ ${slot.name} ออกจาก ${slot.id}?`)) {
+            if (confirm(`ลบ ${slot.name} จาก ${slot.id}?`)) {
               slot.name = null;
               await saveReservation(slot.id, '');
+              loadReservations();
             }
           };
           div.appendChild(delBtn);
@@ -182,7 +155,6 @@
     };
 
     loadReservations();
-    setInterval(loadReservations, 10000); // โหลดใหม่ทุก 10 วินาที
   </script>
 </body>
 </html>
