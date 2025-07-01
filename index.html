@@ -91,6 +91,8 @@
   </div>
 
   <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbyMp4U_Rq6OVG4fNWZNmU-vesP6f4iziT9kBP8tlgQWGDqy-aUmsDZrG-9C9Sihzkms/exec";
+
     const tables = Array.from({ length: 15 }, (_, i) => ({ id: `โต๊ะ ${i + 1}`, name: null }));
     const bins = Array.from({ length: 2 }, (_, i) => ({ id: `ถังขยะ ${i + 1}`, name: null }));
     const floors = Array.from({ length: 7 }, (_, i) => ({ id: `กวาดพื้น ${i + 1}`, name: null }));
@@ -98,19 +100,25 @@
 
     let isAdmin = false;
 
-    function loadReservations() {
-      const saved = JSON.parse(localStorage.getItem('reservations')) || {};
-      data.forEach(slot => {
-        slot.name = saved[slot.id] || null;
-      });
+    async function loadReservations() {
+      try {
+        const res = await fetch(API_URL);
+        const saved = await res.json();
+        data.forEach(slot => {
+          slot.name = saved[slot.id] || null;
+        });
+        render();
+      } catch (err) {
+        alert("โหลดข้อมูลไม่สำเร็จ");
+      }
     }
 
-    function saveReservations() {
-      const saveData = {};
-      data.forEach(slot => {
-        if (slot.name) saveData[slot.id] = slot.name;
+    async function saveReservation(id, name) {
+      await fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({ id, name }),
+        headers: { "Content-Type": "application/json" },
       });
-      localStorage.setItem('reservations', JSON.stringify(saveData));
     }
 
     function renderGroup(group, containerId) {
@@ -124,7 +132,7 @@
         if (isAdmin) div.classList.add('admin');
 
         if (!slot.name && !isAdmin) {
-          div.onclick = () => {
+          div.onclick = async () => {
             const name = prompt(`ใส่ชื่อนักเรียนเพื่อจอง ${slot.id}:`);
             if (name) {
               if (data.some(s => s.name === name)) {
@@ -132,8 +140,8 @@
                 return;
               }
               slot.name = name;
-              saveReservations();
-              render();
+              await saveReservation(slot.id, name);
+              loadReservations();
             }
           };
         }
@@ -142,12 +150,12 @@
           const delBtn = document.createElement('button');
           delBtn.textContent = 'X';
           delBtn.className = 'admin-btn';
-          delBtn.onclick = (e) => {
+          delBtn.onclick = async (e) => {
             e.stopPropagation();
             if (confirm(`ลบชื่อ ${slot.name} ออกจาก ${slot.id}?`)) {
               slot.name = null;
-              saveReservations();
-              render();
+              await saveReservation(slot.id, '');
+              loadReservations();
             }
           };
           div.appendChild(delBtn);
@@ -175,7 +183,6 @@
     };
 
     loadReservations();
-    render();
   </script>
 </body>
 </html>
