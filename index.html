@@ -77,7 +77,6 @@
 <body>
   <h1>ระบบจองเวรโรงอาหาร 🍽️</h1>
   <button id="adminToggle">เข้าสู่โหมดแอดมิน</button>
-
   <div class="category">
     <h2>🍴 โต๊ะโรงอาหาร</h2>
     <div class="grid" id="tables"></div>
@@ -92,7 +91,7 @@
   </div>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbwlQN-CNe620VVkiKZcPzhcbH1sfamWIlVGk9q-7OVEZ4WoKnQX3gDh4tHtI2HEDePp/exec"; // <== วาง URL ของคุณตรงนี้
+    const API_URL = "https://script.google.com/macros/s/AKfycbwlQN-CNe620VVkiKZcPzhcbH1sfamWIlVGk9q-7OVEZ4WoKnQX3gDh4tHtI2HEDePp/exec";
 
     const tables = Array.from({ length: 15 }, (_, i) => ({ id: `โต๊ะ ${i + 1}`, name: null }));
     const bins = Array.from({ length: 2 }, (_, i) => ({ id: `ถังขยะ ${i + 1}`, name: null }));
@@ -110,19 +109,18 @@
         });
         render();
       } catch (err) {
-        alert("โหลดข้อมูลไม่สำเร็จ");
+        console.error("โหลดข้อมูลไม่สำเร็จ:", err);
       }
     }
 
-  async function saveReservation(id, name) {
-  await fetch(API_URL, {
-    method: "POST",
-    body: JSON.stringify({ id, name }),
-    headers: { "Content-Type": "application/json" },
-  });
-  await loadReservations(); // ← โหลดข้อมูลใหม่ทันที
-}
-
+    async function saveReservation(id, name) {
+      await fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({ id, name }),
+        headers: { "Content-Type": "application/json" },
+      });
+      await loadReservations(); // โหลดข้อมูลใหม่ทันที
+    }
 
     function renderGroup(group, containerId) {
       const el = document.getElementById(containerId);
@@ -144,7 +142,6 @@
               }
               slot.name = name;
               await saveReservation(slot.id, name);
-              loadReservations();
             }
           };
         }
@@ -158,7 +155,6 @@
             if (confirm(`ลบชื่อ ${slot.name} ออกจาก ${slot.id}?`)) {
               slot.name = null;
               await saveReservation(slot.id, '');
-              loadReservations();
             }
           };
           div.appendChild(delBtn);
@@ -186,6 +182,7 @@
     };
 
     loadReservations();
+    setInterval(loadReservations, 10000); // โหลดใหม่ทุก 10 วินาที
   </script>
 </body>
 </html>
